@@ -29,9 +29,7 @@ def visualise_vertex_deviations_all(deviations, resolution=(512, 512)):
     config = get_config()
     flamelayer = FLAME(config)
     shape_params = torch.zeros(1, 100)
-    shape_params[:, 0] = -2
     pose_params = torch.zeros(1, 6)
-    # pose_params[:, 2] = np.pi
     expression_params = torch.zeros(1, 50, dtype=torch.float32)
     neck_pose = torch.zeros(1, 3)
     eye_pose = torch.zeros(1, 6)

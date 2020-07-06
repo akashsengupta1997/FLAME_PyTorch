@@ -63,10 +63,7 @@ class Renderer():
                color=[0.6, 0.6, 0.6], vertex_colours=None, return_mask=False):
 
         if mesh is None:
-            mesh = trimesh.Trimesh(vertices=verts, faces=self.faces)
-
-        if vertex_colours is not None:
-            mesh.visual.vertex_colors = vertex_colours
+            mesh = trimesh.Trimesh(vertices=verts, faces=self.faces, vertex_colors=vertex_colours)
 
         if mesh_filename is not None:
             mesh.export(mesh_filename)
@@ -88,11 +85,12 @@ class Renderer():
             zfar=1000.
         )
 
-        material = pyrender.MetallicRoughnessMaterial(
-            metallicFactor=0.0,
-            alphaMode='OPAQUE',
-            baseColorFactor=(color[0], color[1], color[2], 1.0)
-        )
+        # material = pyrender.MetallicRoughnessMaterial(
+        #     metallicFactor=0.0,
+        #     alphaMode='OPAQUE',
+        #     baseColorFactor=(color[0], color[1], color[2], 1.0)
+        # )
+        material = None
         mesh = pyrender.Mesh.from_trimesh(mesh, material=material)
 
         mesh_node = self.scene.add(mesh, 'mesh')

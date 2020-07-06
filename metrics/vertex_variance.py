@@ -31,7 +31,7 @@ def compute_vertex_deviations_for_actor(actor_path, save_deviation_image=True):
         if seq_deviations is not None:
             all_deviations_array.append(seq_deviations)
     all_deviations_array = np.concatenate(all_deviations_array, axis=0)
-
+    print(all_deviations_array.shape)
     if save_deviation_image:
         initial_mesh_path = sorted([os.path.join(seq_paths[0], f)for f in os.listdir(seq_paths[0])
                                     if f.endswith('.ply')])[0]
@@ -46,12 +46,12 @@ def compute_vertex_deviations_for_all(d3dfacs_path, save_deviation_image=True):
     actor_paths = natsorted([os.path.join(d3dfacs_path, f) for f in os.listdir(d3dfacs_path)
                            if os.path.isdir(os.path.join(d3dfacs_path, f))])
     all_deviations_array = []
-    for path in actor_paths:
-        actor_deviations = compute_vertex_deviations_for_actor(path, save_deviation_image=False)
+    for idx, path in enumerate(actor_paths):
+        actor_deviations = compute_vertex_deviations_for_actor(path, save_deviation_image=True)
         all_deviations_array.append(actor_deviations)
     all_deviations_array = np.concatenate(all_deviations_array, axis=0)
-    print(all_deviations_array.shape)
-
+    print('SHAPE', all_deviations_array.shape)
+    print('MAX', all_deviations_array.max())
     if save_deviation_image:
         deviation_image = visualise_vertex_deviations_all(all_deviations_array)
         cv2.imwrite(os.path.join(d3dfacs_path, 'all_deviation_image.png'),

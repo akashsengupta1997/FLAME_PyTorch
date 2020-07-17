@@ -40,53 +40,36 @@ radian = np.pi/180.0
 flamelayer = FLAME(config)
 
 # Creating a batch of mean shapes
-shape_params = torch.zeros(8, 100).to(device)
-shape_params[:, 0] = -2
+shape_params = torch.zeros(1, 100).to(device)  # Using 100 here but can use up to 300 (set in config)
+# shape_params[:, 0] = -5
 
 # Creating a batch of different global poses
-# pose_params_numpy[:, :3] : global rotaation
-# pose_params_numpy[:, 3:] : jaw rotaation
-# pose_params_numpy = np.array([[0.0, 30.0*radian, 0.0, 0.0, 0.0, 0.0],
-#                                 [0.0, -30.0*radian, 0.0, 0.0, 0.0, 0.0],
-#                                 [0.0, 85.0*radian, 0.0, 0.0, 0.0, 0.0],
-#                                 [0.0, -48.0*radian, 0.0, 0.0, 0.0, 0.0],
-#                                 [0.0, 10.0*radian, 0.0, 0.0, 0.0, 0.0],
-#                                 [0.0, -15.0*radian, 0.0, 0.0, 0.0, 0.0],
-#                                 [0.0, 0.0*radian, 0.0, 0.0, 0.0, 0.0],
-#                                 [0.0, -0.0*radian, 0.0, 0.0, 0.0, 0.0]], dtype=np.float32)
-# pose_params = torch.tensor(pose_params_numpy, dtype=torch.float32).to(device)
-pose_params = torch.zeros(8, 6).to(device)
-# pose_params[:, 2] = np.pi
+pose_params = torch.zeros(1, 6).to(device)  # First 3 components are global rotation of head, next 3 params is jaw rotation
+# pose_params[:, 5] = np.pi/4
 
 # Cerating a batch of neutral expressions
-expression_params = torch.zeros(8, 50, dtype=torch.float32).to(device)
+expression_params = torch.zeros(1, 50, dtype=torch.float32).to(device)  # Using 50 here but can use up to 100 (set in config)
 flamelayer.to(device)
 
-# Forward Pass of FLAME, one can easily use this as a layer in a Deep learning Framework 
-vertice, landmark = flamelayer(shape_params, expression_params, pose_params) # For RingNet project
-print(vertice.size(), landmark.size())
-
+# Forward Pass of FLAME, one can easily use this as a layer in a Deep learning Framework
 if config.optimize_eyeballpose and config.optimize_neckpose:
-    neck_pose = torch.zeros(8, 3).to(device)
-    eye_pose = torch.zeros(8, 6).to(device)
-    vertice, landmark = flamelayer(shape_params, expression_params, pose_params, neck_pose, eye_pose)
+    neck_pose = torch.zeros(1, 3).to(device)
+    # neck_pose[:, 1] = np.pi/4
+    eye_pose = torch.zeros(1, 6).to(device)
+    # eye_pose[:, 1] = np.pi
+    vertices, landmark = flamelayer(shape_params, expression_params, pose_params, neck_pose, eye_pose)
+else:
+    vertices, landmark = flamelayer(shape_params, expression_params, pose_params)  # For RingNet project
+print(vertices.size(), landmark.size())
 
 faces = flamelayer.faces
-renderer = Renderer(faces, resolution=(512,512))
+print(faces.shape)
+renderer = Renderer(faces, resolution=(512, 512))
 cam = np.array([4.0, 0., 0.])
 for i in range(1):
-    vertices = vertice[i].detach().cpu().numpy().squeeze()
+    vertices = vertices[i].detach().cpu().numpy().squeeze()
     joints = landmark[i].detach().cpu().numpy().squeeze()
-    # vertex_colors = np.ones([vertices.shape[0], 4]) * [0.3, 0.3, 0.3, 0.8]
-
-    # tri_mesh = trimesh.Trimesh(vertices, faces,
-    #                             vertex_colors=vertex_colors)
-    # mesh = pyrender.Mesh.from_trimesh(tri_mesh)
-    # scene = pyrender.Scene()
-    # scene.add(mesh)
-    # pyrender.Viewer(scene, use_raymond_lighting=True)
-
-    rend_img = renderer.render(vertices, cam, angle=-20, axis=[0., 1., 0.])
+    rend_img = renderer.render(vertices, cam, angle=0, axis=[0., 1., 0.])
 
     plt.figure()
     plt.subplot(121)
@@ -95,5 +78,3 @@ for i in range(1):
     plt.subplot(122)
     plt.imshow(rend_img)
     plt.show()
-
-np.save('model/flame_faces.npy', faces)

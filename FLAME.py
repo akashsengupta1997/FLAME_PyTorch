@@ -56,28 +56,28 @@ class FLAME(nn.Module):
         # There are total 300 shape parameters to control FLAME; But one can use the first few parameters to express
         # the shape. For example 100 shape parameters are used for RingNet project 
         default_shape = torch.zeros([self.batch_size, 300-config.shape_params],
-                                            dtype=self.dtype, requires_grad=False)
+                                    dtype=self.dtype, requires_grad=False)
         self.register_parameter('shape_betas', nn.Parameter(default_shape,
-                                                      requires_grad=False))
+                                                            requires_grad=False))
 
         # Fixing remaining expression betas
         # There are total 100 shape expression parameters to control FLAME; But one can use the first few parameters to express
         # the expression. For example 50 expression parameters are used for RingNet project 
         default_exp = torch.zeros([self.batch_size, 100 - config.expression_params],
-                                    dtype=self.dtype, requires_grad=False)
+                                  dtype=self.dtype, requires_grad=False)
         self.register_parameter('expression_betas', nn.Parameter(default_exp,
-                                                            requires_grad=False))
+                                                                 requires_grad=False))
 
         # Eyeball and neck rotation
         default_eyball_pose = torch.zeros([self.batch_size, 6],
-                                    dtype=self.dtype, requires_grad=False)
+                                          dtype=self.dtype, requires_grad=False)
         self.register_parameter('eye_pose', nn.Parameter(default_eyball_pose,
-                                                            requires_grad=False))
+                                                         requires_grad=False))
 
         default_neck_pose = torch.zeros([self.batch_size, 3],
-                                    dtype=self.dtype, requires_grad=False)
+                                        dtype=self.dtype, requires_grad=False)
         self.register_parameter('neck_pose', nn.Parameter(default_neck_pose,
-                                                            requires_grad=False))
+                                                          requires_grad=False))
 
         # Fixing 3D translation since we use translation in the image plane
 
@@ -133,7 +133,7 @@ class FLAME(nn.Module):
 
         if self.use_face_contour:
             conture_embeddings = np.load(config.dynamic_landmark_embedding_path,
-                allow_pickle=True, encoding='latin1')
+                                         allow_pickle=True, encoding='latin1')
             conture_embeddings = conture_embeddings[()]
             dynamic_lmk_faces_idx = np.array(conture_embeddings['lmk_face_idx']).astype(np.int64)
             dynamic_lmk_faces_idx = torch.tensor(
@@ -157,8 +157,8 @@ class FLAME(nn.Module):
                                  torch.stack(neck_kin_chain))
 
     def _find_dynamic_lmk_idx_and_bcoords(self, vertices, pose, dynamic_lmk_faces_idx,
-                                         dynamic_lmk_b_coords,
-                                         neck_kin_chain, dtype=torch.float32):
+                                          dynamic_lmk_b_coords,
+                                          neck_kin_chain, dtype=torch.float32):
         """
             Selects the face contour depending on the reletive position of the head
             Input:
@@ -219,9 +219,9 @@ class FLAME(nn.Module):
         template_vertices = self.v_template.unsqueeze(0).repeat(self.batch_size, 1, 1)
 
         vertices, _ = lbs(betas, full_pose, template_vertices,
-                               self.shapedirs, self.posedirs,
-                               self.J_regressor, self.parents,
-                               self.lbs_weights, dtype=self.dtype)
+                          self.shapedirs, self.posedirs,
+                          self.J_regressor, self.parents,
+                          self.lbs_weights, dtype=self.dtype)
 
         lmk_faces_idx = self.lmk_faces_idx.unsqueeze(dim=0).repeat(
             self.batch_size, 1)
@@ -239,8 +239,8 @@ class FLAME(nn.Module):
                 [dyn_lmk_bary_coords, lmk_bary_coords], 1)
 
         landmarks = vertices2landmarks(vertices, self.faces_tensor,
-                                             lmk_faces_idx,
-                                             lmk_bary_coords)
+                                       lmk_faces_idx,
+                                       lmk_bary_coords)
 
         if self.use_3D_translation:
             landmarks += transl.unsqueeze(dim=1)

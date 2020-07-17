@@ -45,9 +45,9 @@ class Renderer():
         )
 
         # set the scene
-        self.scene = pyrender.Scene(bg_color=[0.0, 0.0, 0.0, 0.0], ambient_light=(0.3, 0.3, 0.3))
+        self.scene = pyrender.Scene(bg_color=[0.0, 0.0, 0.0, 0.0], ambient_light=(0.1, 0.1, 0.1))
 
-        light = pyrender.PointLight(color=[1.0, 1.0, 1.0], intensity=1.)
+        light = pyrender.PointLight(color=[1.0, 1.0, 1.0], intensity=2.)
 
         light_pose = np.eye(4)
         light_pose[:3, 3] = [0, -1, 1]

@@ -112,17 +112,25 @@ def compute_contour_vertex_deviations_for_actor_static(actor_mesh_path, base_con
     actor_contour_vertices = actor_mesh.vertices[contour_indices]
     plt.figure()
     plt.subplot(111, projection='3d')
-    plt.plot(xs=actor_contour_vertices[:, 0], ys=actor_contour_vertices[:, 1], zs=actor_contour_vertices[:, 2], c='b')
-    plt.plot(xs=base_contour_vertices[:, 0], ys=base_contour_vertices[:, 1], zs=base_contour_vertices[:, 2], c='r')
+    plt.plot(xs=actor_contour_vertices[:, 0]*1000, ys=actor_contour_vertices[:, 1]*1000, zs=actor_contour_vertices[:, 2]*1000, c=[0, 0.5, 0])
+    plt.plot(xs=base_contour_vertices[:, 0]*1000, ys=base_contour_vertices[:, 1]*1000, zs=base_contour_vertices[:, 2]*1000, c='r')
+    plt.legend(['Actor contour', 'Synthetic mask contour'])
+    plt.xlabel('x (mm)')
+    plt.ylabel('y (mm)')
+    plt.gca().set_zlabel('z (mm)')
 
     if apply_similarity_transform:
         actor_contour_vertices = compute_similarity_transform(actor_contour_vertices, base_contour_vertices)
         plt.figure()
         plt.subplot(111, projection='3d')
-        plt.plot(xs=actor_contour_vertices[:, 0], ys=actor_contour_vertices[:, 1], zs=actor_contour_vertices[:, 2], c='b')
-        plt.plot(xs=base_contour_vertices[:, 0], ys=base_contour_vertices[:, 1], zs=base_contour_vertices[:, 2],
+        plt.plot(xs=actor_contour_vertices[:, 0]*1000, ys=actor_contour_vertices[:, 1]*1000, zs=actor_contour_vertices[:, 2]*1000, c=[0, 0.5, 0])
+        plt.plot(xs=base_contour_vertices[:, 0]*1000, ys=base_contour_vertices[:, 1]*1000, zs=base_contour_vertices[:, 2]*1000,
                  c='r')
-    # plt.show()
+        plt.legend(['Actor contour', 'Synthetic mask contour'])
+        plt.xlabel('x (mm)')
+        plt.ylabel('y (mm)')
+        plt.gca().set_zlabel('z (mm)')
+    plt.show()
 
     deviations = np.sqrt(np.sum((actor_contour_vertices - base_contour_vertices) ** 2, axis=-1))  # (num contour verts,)
     if save_deviation_image:

@@ -29,7 +29,7 @@ def render_sequence(path, resolution=(512, 512), save=True):
 
 
 def render_sequence_deviations(path, resolution=(512, 512), save=True, max_dev_for_colourmap=0.004,
-                               rigid_transform=False):
+                               rigid_transform=False, contour_indices=None):
     """
     Renders a sequence of actions from plyfiles. Vertex colours are determined by the deviation of the vertex from the
     resting face. The resting face is taken to be the first frame (i.e first plyfile) of the sequence.
@@ -53,6 +53,9 @@ def render_sequence_deviations(path, resolution=(512, 512), save=True, max_dev_f
         deviations = deviations * (1 / max_dev_for_colourmap)
         deviations[deviations > 1] = 1
 
+        if contour_indices is not None:
+            deviations[[i for i in range(5023) if i not in contour_indices]] = 0.
+
         # Set vertex colour maps for render image
         cmap = cm.get_cmap('jet', deviations.shape[0])
         vertex_colours_for_render = cmap(deviations)
@@ -71,7 +74,7 @@ def render_sequence_deviations(path, resolution=(512, 512), save=True, max_dev_f
 
 
 def render_all_sequences_for_actor(actor_path, resolution=(400,400), colour_deviations=False,
-                                   max_dev_for_colourmap=0.004, rigid_transform=False):
+                                   max_dev_for_colourmap=0.004, rigid_transform=False, contour_indices=None):
     seq_paths = natsorted([os.path.join(actor_path, f) for f in os.listdir(actor_path)
                         if os.path.isdir(os.path.join(actor_path, f))])
     all_img_array = []
@@ -80,16 +83,20 @@ def render_all_sequences_for_actor(actor_path, resolution=(400,400), colour_devi
         if colour_deviations:
             img_array = render_sequence_deviations(path, resolution=resolution, save=False,
                                                    max_dev_for_colourmap=max_dev_for_colourmap,
-                                                   rigid_transform=rigid_transform)
+                                                   rigid_transform=rigid_transform,
+                                                   contour_indices=contour_indices)
         else:
             img_array = render_sequence(path, resolution=resolution, save=False)
         all_img_array += img_array
 
     if colour_deviations:
+        out_fname = 'combined_deviation_render'
         if rigid_transform:
-            out_path = os.path.join(actor_path, 'combined_deviation_render_rigid_transform.avi')
-        else:
-            out_path = os.path.join(actor_path, 'combined_deviation_render.avi')
+            out_fname += '_rigid_transform'
+        if contour_indices is not None:
+            out_fname += '_contour'
+        out_fname += '.avi'
+        out_path = os.path.join(actor_path, out_fname)
     else:
         out_path = os.path.join(actor_path, 'combined_render.avi')
     out = cv2.VideoWriter(out_path, cv2.VideoWriter_fourcc(*'DIVX'), 60, resolution)
@@ -98,12 +105,16 @@ def render_all_sequences_for_actor(actor_path, resolution=(400,400), colour_devi
         out.write(cv2.cvtColor(all_img_array[i], cv2.COLOR_RGB2BGR))
     out.release()
 
+contour_indices = [2094, 2098, 2097, 2100, 1575, 3727, 3726, 3725, 3588, 3587, 3643, 3636, 3635, 3634, 3630,
+                   3414, 3413, 3415, 3416, 3417, 3419, 3389, 3390, 3470, 3471, 3472, 2711, 3127, 3124, 3125,
+                   3121, 3122, 3105, 3104, 2761, 3602, 2973, 3561, 1895, 3814, 1644, 2069, 2070, 2095, 2094]
 
 render_all_sequences_for_actor("/Users/Akash_Sengupta/Documents/Datasets/d3dfacs_alignments/Joe",
                                resolution=(512, 512),
                                colour_deviations=True,
-                               max_dev_for_colourmap=0.015,
-                               rigid_transform=True)
+                               max_dev_for_colourmap=0.01,
+                               rigid_transform=True,
+                               contour_indices=contour_indices)
 
 
 
